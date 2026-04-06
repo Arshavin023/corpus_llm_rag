@@ -44,3 +44,4 @@ jobs:
             else
                 echo "Pull failed! Keeping the old version running."
                 exit 1
+            fi  # <--- This was missing!
