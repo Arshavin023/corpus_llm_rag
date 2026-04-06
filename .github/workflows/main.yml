@@ -1,75 +1,75 @@
-name: Staging Deployment
+# name: Staging Deployment
 
-on:
-  push:
-    branches:
-      - main
+# on:
+#   push:
+#     branches:
+#       - main
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout Repository
+#         uses: actions/checkout@v4
 
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+#       - name: Log in to Docker Hub
+#         uses: docker/login-action@v3
+#         with:
+#           username: ${{ secrets.DOCKER_USERNAME }}
+#           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and Push
-        run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/corpus_llm_rag:latest .
-          docker push ${{ secrets.DOCKER_USERNAME }}/corpus_llm_rag:latest
+#       - name: Build and Push
+#         run: |
+#           docker build -t ${{ secrets.DOCKER_USERNAME }}/corpus_llm_rag:latest .
+#           docker push ${{ secrets.DOCKER_USERNAME }}/corpus_llm_rag:latest
 
-      - name: SSH Deploy
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.STAGING_HOST }}
-          username: ${{ secrets.STAGING_USER }}
-          key: ${{ secrets.STAGING_SSH_KEY }}
-          port: ${{ secrets.STAGING_PORT }}
-          script_stop: true
-          script: |
-            # 1. Clear dangling images
-            docker image prune -f
+#       - name: SSH Deploy
+#         uses: appleboy/ssh-action@v1.0.3
+#         with:
+#           host: ${{ secrets.STAGING_HOST }}
+#           username: ${{ secrets.STAGING_USER }}
+#           key: ${{ secrets.STAGING_SSH_KEY }}
+#           port: ${{ secrets.STAGING_PORT }}
+#           script_stop: true
+#           script: |
+#             # 1. Clear dangling images
+#             docker image prune -f
 
-            # 2. Pull and Restart
-            if docker pull ${{ secrets.DOCKER_USERNAME }}/corpus_llm_rag:latest; then
-                echo "Pull successful, swapping containers..."
-                docker stop corpus_llm_rag || true
-                docker rm corpus_llm_rag || true
+#             # 2. Pull and Restart
+#             if docker pull ${{ secrets.DOCKER_USERNAME }}/corpus_llm_rag:latest; then
+#                 echo "Pull successful, swapping containers..."
+#                 docker stop corpus_llm_rag || true
+#                 docker rm corpus_llm_rag || true
                 
-                # Updated command with Persistent Volume Mapping
-                docker run -d --name corpus_llm_rag \
-                  -p 1762:1762 \
-                  -v /home/uche/chroma_data:/app/chroma_db \
-                  ${{ secrets.DOCKER_USERNAME }}/corpus_llm_rag:latest
-            else
-                echo "Pull failed!"
-                exit 1
-            fi
+#                 # Updated command with Persistent Volume Mapping
+#                 docker run -d --name corpus_llm_rag \
+#                   -p 1762:1762 \
+#                   -v /home/uche/chroma_data:/app/chroma_db \
+#                   ${{ secrets.DOCKER_USERNAME }}/corpus_llm_rag:latest
+#             else
+#                 echo "Pull failed!"
+#                 exit 1
+#             fi
 
-      # - name: SSH Deploy
-      #   uses: appleboy/ssh-action@v1.0.3
-      #   with:
-      #     host: ${{ secrets.STAGING_HOST }}
-      #     username: ${{ secrets.STAGING_USER }}
-      #     key: ${{ secrets.STAGING_SSH_KEY }}
-      #     port: ${{ secrets.STAGING_PORT }}  # <--- Added custom SSH port
-      #     script_stop: true
-      #     script: |
-      #       # 1. Clear ONLY the dangling/old images (not the running one)
-      #       docker image prune -af
+#       # - name: SSH Deploy
+#       #   uses: appleboy/ssh-action@v1.0.3
+#       #   with:
+#       #     host: ${{ secrets.STAGING_HOST }}
+#       #     username: ${{ secrets.STAGING_USER }}
+#       #     key: ${{ secrets.STAGING_SSH_KEY }}
+#       #     port: ${{ secrets.STAGING_PORT }}  # <--- Added custom SSH port
+#       #     script_stop: true
+#       #     script: |
+#       #       # 1. Clear ONLY the dangling/old images (not the running one)
+#       #       docker image prune -af
 
-      #       # 2. Try to pull the new image
-      #       if docker pull ${{ secrets.DOCKER_USERNAME }}/corpus_llm_rag:latest; then
-      #           echo "Pull successful, swapping containers..."
-      #           docker stop corpus_llm_rag || true
-      #           docker rm corpus_llm_rag || true
-      #           docker run -d --name corpus_llm_rag -p 1762:1762 ${{ secrets.DOCKER_USERNAME }}/corpus_llm_rag:latest
-      #       else
-      #           echo "Pull failed! Keeping the old version running."
-      #           exit 1
-      #       fi  # <--- This was missing!
+#       #       # 2. Try to pull the new image
+#       #       if docker pull ${{ secrets.DOCKER_USERNAME }}/corpus_llm_rag:latest; then
+#       #           echo "Pull successful, swapping containers..."
+#       #           docker stop corpus_llm_rag || true
+#       #           docker rm corpus_llm_rag || true
+#       #           docker run -d --name corpus_llm_rag -p 1762:1762 ${{ secrets.DOCKER_USERNAME }}/corpus_llm_rag:latest
+#       #       else
+#       #           echo "Pull failed! Keeping the old version running."
+#       #           exit 1
+#       #       fi  # <--- This was missing!
