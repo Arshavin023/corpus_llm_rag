@@ -10,6 +10,7 @@ unstructured
 python-dotenv
 pypdf
 pytest
+pytest-cov
 
 # pip install torch --index-url https://download.pytorch.org/whl/cpu
 # pip install sentence-transformers
