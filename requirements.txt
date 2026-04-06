@@ -9,6 +9,7 @@ sentence-transformers
 unstructured
 python-dotenv
 pypdf
+pytest
 
 # pip install torch --index-url https://download.pytorch.org/whl/cpu
 # pip install sentence-transformers
