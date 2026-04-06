@@ -12,7 +12,3 @@ python-dotenv
 pypdf
 pytest
 pytest-cov
-
-# pip install torch --index-url https://download.pytorch.org/whl/cpu
-# pip install sentence-transformers
-# pip install langchain langchain-community langchain-text-splitters chromadb

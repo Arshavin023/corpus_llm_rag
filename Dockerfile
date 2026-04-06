@@ -35,4 +35,4 @@ EXPOSE 1762
 
 # 6. Start the application
 # Increased timeout to 600 as you requested, to handle model loading
-CMD ["gunicorn", "-b", "0.0.0.0:1762", "--timeout", "600", "--workers", "2", "src/app:app"]
+CMD ["gunicorn", "-b", "0.0.0.0:1762", "--timeout", "600", "src/app:application"]
