@@ -1,16 +1,14 @@
 flask
-streamlit
 langchain
-langchain-community
 langchain-core
+langchain-community
+langchain-huggingface
+langchain-groq
 chromadb
-pypdf
-beautifulsoup4
-tiktoken
-numpy
+sentence-transformers
+unstructured
 python-dotenv
-scikit-learn
-langchain-text-splitters
+pypdf
 
 # pip install torch --index-url https://download.pytorch.org/whl/cpu
 # pip install sentence-transformers

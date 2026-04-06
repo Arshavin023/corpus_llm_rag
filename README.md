@@ -13,3 +13,4 @@ gatherUsageStats = false
 level = "error"
 
 streamlit run app.py --server.fileWatcherType none
+

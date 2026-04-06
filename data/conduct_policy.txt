@@ -1,0 +1,17 @@
+APEX MOTORS: CODE OF CONDUCT & REMOTE WORK POLICY
+Effective Date: January 1, 2026
+
+1. PROFESSIONAL ETHICS
+All sales consultants and technicians must maintain the highest level of integrity. 
+Misrepresenting vehicle history or pricing is strictly prohibited. 
+
+2. REMOTE WORK ELIGIBILITY
+Administrative and digital marketing staff are eligible for "Hybrid-Flex" status. 
+Sales staff must be present on the showroom floor during assigned shifts. 
+Remote work requires a stable internet connection (min 25Mbps) and a 
+distraction-free environment.
+
+3. DATA SECURITY
+Employees working remotely must use the company-provided VPN to access 
+the inventory management system. Sharing login credentials for the 
+Dealer Management System (DMS) results in immediate termination.

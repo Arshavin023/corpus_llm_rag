@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<policy type="Finance" id="EXP-2026">
+    <title>Business Expense &amp; Travel Reimbursement</title>
+    <rules>
+        <rule category="Travel">
+            <description>Mileage for regional vehicle transfers is reimbursed at $0.65 per mile.</description>
+        </rule>
+        <rule category="Meals">
+            <description>Daily per diem for overnight training is capped at $75.00. Receipts are required for all individual items over $25.00.</description>
+        </rule>
+        <rule category="Client Entertainment">
+            <description>Sales managers may spend up to $200 per client per month without prior CFO approval.</description>
+        </rule>
+    </rules>
+    <submission_deadline>Expenses must be filed within 30 days of the transaction.</submission_deadline>
+</policy>

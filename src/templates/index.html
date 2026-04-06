@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Policy RAG Assistant</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 20px; background-color: #f4f4f9; }
+        #chat-container { border: 1px solid #ccc; background: white; padding: 20px; border-radius: 8px; height: 500px; overflow-y: auto; }
+        .citation { font-size: 0.85em; color: #555; background: #eee; padding: 5px; margin-top: 5px; border-radius: 4px; }
+        .latency { color: #888; font-size: 0.8em; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h2>📚 Company Policy Assistant</h2>
+    <div id="chat-container"></div>
+    <br>
+    <input type="text" id="query" placeholder="Ask about PTO, expenses..." style="width: 80%; padding: 10px;">
+    <button onclick="ask()" style="padding: 10px;">Ask</button>
+
+    <script>
+        async function ask() {
+            const query = document.getElementById('query').value;
+            const container = document.getElementById('chat-container');
+            container.innerHTML += `<p><strong>You:</strong> ${query}</p>`;
+            
+            const response = await fetch('/chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({query: query})
+            });
+            const data = await response.json();
+            
+            let citations = data.citations.map(c => `<div class="citation"><strong>Source:</strong> ${c.source}<br>${c.snippet}...</div>`).join('');
+            
+            container.innerHTML += `<p><strong>AI:</strong> ${data.answer}</p>${citations}`;
+            container.innerHTML += `<p class="latency">⏱ Latency: ${data.latency.toFixed(2)}s</p><hr>`;
+            document.getElementById('query').value = '';
+            container.scrollTop = container.scrollHeight;
+        }
+    </script>
+</body>
+</html>
