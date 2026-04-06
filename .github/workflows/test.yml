@@ -1,7 +1,11 @@
 name: CI - Test Application
 
+# on:
+#   pull_request:
+#     branches:
+#       - test
 on:
-  pull_request:
+  push:
     branches:
       - test
 
