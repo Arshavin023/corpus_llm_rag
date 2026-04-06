@@ -29,7 +29,7 @@ jobs:
           host: ${{ secrets.STAGING_HOST }}
           username: ${{ secrets.STAGING_USER }}
           key: ${{ secrets.STAGING_SSH_KEY }}
-          port: 7029  # <--- Added custom SSH port
+          port: ${{ secrets.STAGING_PORT }}  # <--- Added custom SSH port
           script_stop: true
           script: |
             # 1. Clear ONLY the dangling/old images (not the running one)
