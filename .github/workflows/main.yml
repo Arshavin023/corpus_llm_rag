@@ -33,7 +33,7 @@ jobs:
           script_stop: true
           script: |
             # 1. Clear dangling images
-            docker image prune -af
+            docker image prune -f
 
             # 2. Pull and Restart
             if docker pull ${{ secrets.DOCKER_USERNAME }}/corpus_llm_rag:latest; then
