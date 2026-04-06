@@ -15,8 +15,8 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_chroma import Chroma
 
 # --- CONFIG ---
-DATA_DIR = "data"
-CHROMA_DIR = "chroma_db"
+DATA_DIR = "src/data"
+CHROMA_DIR = "src/chroma_db"
 CHUNK_SIZE = 500
 CHUNK_OVERLAP = 100
 TOP_K = 4

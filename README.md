@@ -14,3 +14,4 @@ level = "error"
 
 streamlit run app.py --server.fileWatcherType none
 
+<!-- gunicorn -b 0.0.0.0:1762 --timeout 600 --workers 2 src/app:app -->

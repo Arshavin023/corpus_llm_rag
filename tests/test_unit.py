@@ -57,20 +57,3 @@ def test_generate_answer_with_context(mock_chat_groq):
     # 5. Assertions
     assert result["answer"] == "Mocked LLM Answer"
     assert result["citations"][0]["source"] == "manual.txt"
-
-# @patch("src.engine.ChatGroq")
-# def test_generate_answer_with_context(mock_chat_groq):
-#     """Test LLM chain invocation with mock context."""
-#     # Mock LLM response
-#     mock_llm = mock_chat_groq.return_value
-#     mock_llm.invoke.return_value = MagicMock(content="Mocked LLM Answer")
-
-#     # Create mock context document
-#     mock_doc = MagicMock()
-#     mock_doc.page_content = "Employees get 10 days of leave."
-#     mock_doc.metadata = {"source": "manual.txt"}
-
-#     result = generate_answer("How much leave?", [mock_doc])
-
-#     assert result["answer"] == "Mocked LLM Answer"
-#     assert result["citations"][0]["source"] == "manual.txt"
