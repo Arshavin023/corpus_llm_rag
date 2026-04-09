@@ -71,17 +71,31 @@ def build_index():
     return vectordb_local
 
 # --- Preload vectorstore ---
-if os.path.exists(CHROMA_DIR):
-    vectordb = Chroma(persist_directory=CHROMA_DIR, embedding_function=embeddings)
-else:
-    vectordb = build_index()
+# if os.path.exists(CHROMA_DIR):
+#     vectordb = Chroma(persist_directory=CHROMA_DIR, embedding_function=embeddings)
+# else:
+#     vectordb = build_index()
+
+_vectordb = None
+def get_vectordb():
+    global _vectordb
+    if _vectordb is None:
+        if os.path.exists(CHROMA_DIR):
+            _vectordb = Chroma(
+                persist_directory=CHROMA_DIR,
+                embedding_function=embeddings
+            )
+        else:
+            _vectordb = build_index()
+    return _vectordb
 
 # --- Preload LLM ---
-llm = ChatGroq(
-    temperature=0,
-    model_name="llama-3.1-8b-instant",
-    api_key=os.getenv("GROQ_API_KEY")
-)
+def get_llm():
+    return ChatGroq(
+        temperature=0,
+        model_name="llama-3.1-8b-instant",
+        api_key=os.getenv("GROQ_API_KEY")
+    )
 
 # --- RAG functions ---
 def generate_answer(query: str, context_docs: List, llm_instance=None) -> Dict:
@@ -89,8 +103,10 @@ def generate_answer(query: str, context_docs: List, llm_instance=None) -> Dict:
     Generates an answer using the provided context_docs.
     Always attaches citations with 'source' and snippet.
     """
+    # if llm_instance is None:
+    #     llm_instance = llm
     if llm_instance is None:
-        llm_instance = llm
+        llm_instance = get_llm()
 
     if not context_docs:
         return {"answer": "I can only answer questions about company policies.", "citations": []}
@@ -123,7 +139,7 @@ def query_rag_stream(query: str, top_k: int = TOP_K):
     """
     # 1. DIRECT RETRIEVAL (Replace the candidate_docs and manual loop here)
     # This retrieves docs and their similarity scores in one go
-    docs_with_scores = vectordb.similarity_search_with_relevance_scores(query, k=top_k)
+    docs_with_scores = get_vectordb().similarity_search_with_relevance_scores(query, k=top_k)
 
     # 2. EXTRACT DOCUMENTS
     # We strip the scores and just keep the Document objects for the LLM
@@ -131,7 +147,7 @@ def query_rag_stream(query: str, top_k: int = TOP_K):
 
     # FALLBACK: If vector store returns nothing, do a standard search
     if not docs:
-        docs = vectordb.similarity_search(query, k=2)
+        docs = get_vectordb().similarity_search(query, k=2)
 
     # 3. CONTEXT PREPARATION
     context_text = "\n\n".join([doc.page_content for doc in docs])
@@ -148,7 +164,8 @@ def query_rag_stream(query: str, top_k: int = TOP_K):
                    "If not found, say you don't know. Be concise."),
         ("human", "Context: {context}\n\nQuestion: {question}")
     ])
-    chain = prompt | llm
+    # chain = prompt | llm
+    chain = prompt | get_llm()
 
     # 7. Yield citations first
     yield (json.dumps({"citations": citations, "content": ""}) + "\n").encode("utf-8")
@@ -156,8 +173,9 @@ def query_rag_stream(query: str, top_k: int = TOP_K):
     # 8. Stream LLM output safely
     for text_chunk in chain.stream({"context": context_text, "question": query}):
         if hasattr(text_chunk, "content") and text_chunk.content:
-            safe_content = html.escape(text_chunk.content)  # escape quotes, newlines
-            yield (json.dumps({"content": safe_content}) + "\n").encode("utf-8")
+            yield (json.dumps({"content": text_chunk.content}) + "\n").encode("utf-8")
+            # safe_content = html.escape(text_chunk.content)  # escape quotes, newlines
+            # yield (json.dumps({"content": safe_content}) + "\n").encode("utf-8")
 
 if __name__ == "__main__":
     print("Engine ready. Chroma vectorstore and LLM preloaded.")

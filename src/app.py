@@ -3,8 +3,10 @@ import os
 from flask import (Flask, request, jsonify, render_template,
                    Response, stream_with_context)
 from dotenv import load_dotenv
-from src.engine import (query_rag_stream, 
-                        vectordb, build_index)
+from src.engine import (query_rag_stream, get_vectordb, 
+                        get_llm,
+                        # vectordb, 
+                        build_index)
 
 # Load environment variables
 load_dotenv()

@@ -1,11 +1,11 @@
 {
-    "2026-04-09_10-33-03": {
+    "2026-04-09_12-57-01": {
         "results": [
             {
                 "question": "How many PTO days do employees with 3-5 years get?",
                 "answer": "15 days per year.",
-                "total_latency": 2.173227310180664,
-                "ttft": 0.2341611385345459,
+                "total_latency": 5.310604095458984,
+                "ttft": 4.028980493545532,
                 "relevant_source_found": [
                     {
                         "source": "benefits.md",
@@ -20,8 +20,8 @@
             {
                 "question": "What is the PTO for new employees?",
                 "answer": "10 days per year for employees with 0-2 years of service.",
-                "total_latency": 0.2721850872039795,
-                "ttft": 0.022700071334838867,
+                "total_latency": 1.3910138607025146,
+                "ttft": 0.22092962265014648,
                 "relevant_source_found": [
                     {
                         "source": "benefits.md",
@@ -32,8 +32,8 @@
             {
                 "question": "What is the reimbursement rate for mileage?",
                 "answer": "$0.65 per mile.",
-                "total_latency": 0.29461121559143066,
-                "ttft": 0.029959917068481445,
+                "total_latency": 1.3444130420684814,
+                "ttft": 0.17757582664489746,
                 "relevant_source_found": [
                     {
                         "source": "expenses.xml",
@@ -44,8 +44,8 @@
             {
                 "question": "What is the meal per diem limit?",
                 "answer": "I don't know. The provided information only mentions a daily per diem cap of $75.00 for overnight training, but it does not specify a meal per diem limit.",
-                "total_latency": 0.6160616874694824,
-                "ttft": 0.029429912567138672,
+                "total_latency": 1.475257396697998,
+                "ttft": 0.35248279571533203,
                 "relevant_source_found": [
                     {
                         "source": "expenses.xml",
@@ -56,8 +56,8 @@
             {
                 "question": "What happens if login credentials are shared?",
                 "answer": "Immediate termination.",
-                "total_latency": 0.33275508880615234,
-                "ttft": 0.036263227462768555,
+                "total_latency": 1.5708401203155518,
+                "ttft": 0.2639601230621338,
                 "relevant_source_found": [
                     {
                         "source": "conduct_policy.txt",
@@ -68,8 +68,8 @@
             {
                 "question": "How many days in advance must leave be requested?",
                 "answer": "Leave requests must be submitted at least 14 days in advance.",
-                "total_latency": 0.27436232566833496,
-                "ttft": 0.03265833854675293,
+                "total_latency": 1.5525944232940674,
+                "ttft": 0.2812497615814209,
                 "relevant_source_found": [
                     {
                         "source": "benefits.md",
@@ -84,15 +84,15 @@
             {
                 "question": "What is the minimum internet speed for remote work?",
                 "answer": "25Mbps.",
-                "total_latency": 0.41437363624572754,
-                "ttft": 0.04102158546447754,
+                "total_latency": 1.1382088661193848,
+                "ttft": 0.20614886283874512,
                 "relevant_source_found": "N/A"
             },
             {
                 "question": "What is the reimbursement submission deadline?",
                 "answer": "Expenses must be filed within 30 days of the transaction.",
-                "total_latency": 0.4075655937194824,
-                "ttft": 0.029033660888671875,
+                "total_latency": 1.3964354991912842,
+                "ttft": 0.13999724388122559,
                 "relevant_source_found": [
                     {
                         "source": "expenses.xml",
@@ -103,8 +103,8 @@
             {
                 "question": "What is required before a test drive?",
                 "answer": "The Sales Consultant must:\n\n1. Scan a valid Driver's License into the system.\n2. Verify the customer is at least 21 years of age.\n3. Ensure the \"Trade-In\" vehicle is parked in the designated security zone.",
-                "total_latency": 0.34243011474609375,
-                "ttft": 0.023557424545288086,
+                "total_latency": 1.5234942436218262,
+                "ttft": 0.2030949592590332,
                 "relevant_source_found": [
                     {
                         "source": "vehicle_safety.html",
@@ -119,8 +119,8 @@
             {
                 "question": "Are pets allowed in demo vehicles?",
                 "answer": "No, smoking or transporting pets in Demo units is strictly prohibited.",
-                "total_latency": 0.3435060977935791,
-                "ttft": 0.041941165924072266,
+                "total_latency": 2.341273069381714,
+                "ttft": 0.4302666187286377,
                 "relevant_source_found": [
                     {
                         "source": "vehicle_safety.html",
@@ -135,8 +135,8 @@
             {
                 "question": "How long before passwords expire?",
                 "answer": "90 days.",
-                "total_latency": 0.3404722213745117,
-                "ttft": 0.03433704376220703,
+                "total_latency": 1.5288214683532715,
+                "ttft": 0.31209874153137207,
                 "relevant_source_found": [
                     {
                         "source": "it_security.md",
@@ -151,8 +151,8 @@
             {
                 "question": "What is the minimum password length?",
                 "answer": "Minimum 12 characters.",
-                "total_latency": 0.5798418521881104,
-                "ttft": 0.023726701736450195,
+                "total_latency": 1.4947450160980225,
+                "ttft": 0.17026281356811523,
                 "relevant_source_found": [
                     {
                         "source": "it_security.md",
@@ -167,8 +167,8 @@
             {
                 "question": "How soon must security incidents be reported?",
                 "answer": "Within 24 hours.",
-                "total_latency": 0.25507569313049316,
-                "ttft": 0.03313016891479492,
+                "total_latency": 1.3165662288665771,
+                "ttft": 0.25290751457214355,
                 "relevant_source_found": [
                     {
                         "source": "it_security.md",
@@ -179,8 +179,8 @@
             {
                 "question": "What happens after 3 late arrivals?",
                 "answer": "HR review.",
-                "total_latency": 0.2990303039550781,
-                "ttft": 0.026067256927490234,
+                "total_latency": 1.4392178058624268,
+                "ttft": 0.25017523765563965,
                 "relevant_source_found": [
                     {
                         "source": "attendance.md",
@@ -191,8 +191,8 @@
             {
                 "question": "How long to resolve customer complaints?",
                 "answer": "48 hours.",
-                "total_latency": 0.3548471927642822,
-                "ttft": 0.04115152359008789,
+                "total_latency": 1.4842839241027832,
+                "ttft": 0.23069453239440918,
                 "relevant_source_found": [
                     {
                         "source": "customer_service.txt",
@@ -204,9 +204,9 @@
         "metrics": {
             "groundedness": 0.9333333333333333,
             "citation_accuracy": 0.9333333333333333,
-            "latency_p50": 0.34243011474609375,
-            "latency_p95": 0.6160616874694824,
-            "avg_ttft": 0.045275942484537764
+            "latency_p50": 1.4842839241027832,
+            "latency_p95": 2.341273069381714,
+            "avg_ttft": 0.5013883431752523
         }
     }
 }

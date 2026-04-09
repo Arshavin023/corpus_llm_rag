@@ -105,6 +105,7 @@ python3 src/engine.py
 ```bash
 python3 src/app.py 
 gunicorn --timeout 120 --bind 0.0.0.0:1762 src.app:app --worker-class gevent --workers 1
+rm -rf src/chroma_db src/__pycache__ && python3 src/engine.py && truncate -s 0 src/evaluation/evaluation_results.json && python3 src/evaluate.py && pytest -v
 ```
 #### c. Evaluate LLM <a name="Evaluate LLM & RAG"></a>
 - “Groundedness is approximated via substring match between generated and expected answers. Future - work could use semantic similarity or LLM-based evaluation.”
@@ -120,4 +121,3 @@ gunicorn --timeout 120 --bind 0.0.0.0:1762 src.app:app --worker-class gevent --w
 
 ## License <a name="license"></a>
 - MIT License
-
