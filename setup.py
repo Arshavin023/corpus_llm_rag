@@ -9,7 +9,7 @@ def get_requirements(file_path: str) -> List[str]:
         for line in file_obj:
             line = line.strip()
             # Skip empty lines, comments, and the "-e ." flag
-            if not line or line.startswith("#") or line == HYPHEN_E_NOT:
+            if not line or line.startswith("#") or line.startswith("-") or line == HYPHEN_E_NOT:
                 continue
             requirements.append(line)
     return requirements
