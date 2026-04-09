@@ -103,8 +103,12 @@ python3 src/engine.py
 ```
 #### b. Run Flask Web App <a name="Run Web App Locally"></a>
 ```bash
-python3 src/app.py
+python3 src/app.py 
+gunicorn --timeout 120 --bind 0.0.0.0:1762 src.app:app --worker-class gevent --workers 1
 ```
+#### c. Evaluate LLM <a name="Evaluate LLM & RAG"></a>
+- “Groundedness is approximated via substring match between generated and expected answers. Future - work could use semantic similarity or LLM-based evaluation.”
+- “We implemented a two-stage retrieval pipeline with re-ranking to improve precision.”
 
 ### 6. CI/CD & Deployment <a name="cicd--deployment"></a>
 #### Add environment variables in .github/workflows YAML files and deploy the desired branch

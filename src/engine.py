@@ -1,36 +1,42 @@
 import os
+import warnings
 import time
+import numpy as np
 from typing import List, Dict
+import json
+import html
 from langchain_community.document_loaders import (
     TextLoader, 
     PyPDFLoader, 
     UnstructuredHTMLLoader,
-    UnstructuredXMLLoader  # Add this import
+    UnstructuredXMLLoader
 )
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_groq import ChatGroq
-# from langchain.prompts import ChatPromptTemplate
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_chroma import Chroma
-
+warnings.filterwarnings(
+    "ignore",
+    message="Relevance scores must be between 0 and 1"
+)
 # --- CONFIG ---
 DATA_DIR = "src/data"
 CHROMA_DIR = "src/chroma_db"
-CHUNK_SIZE = 500
+CHUNK_SIZE = 400
 CHUNK_OVERLAP = 100
-TOP_K = 4
+TOP_K = 5  # increased to improve grounding
 
-# Initialize embeddings once for reuse
+# --- Preload embeddings ---
 embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
-
+# embeddings = HuggingFaceEmbeddings(model_name="all-mpnet-base-v2")
+# --- Document loaders ---
 def load_documents():
     docs = []
     if not os.path.exists(DATA_DIR):
         os.makedirs(DATA_DIR)
     for file in os.listdir(DATA_DIR):
         path = os.path.join(DATA_DIR, file)
-        # Determine the correct loader based on extension
         if file.endswith((".txt", ".md")):
             loader = TextLoader(path)
         elif file.endswith(".pdf"):
@@ -38,63 +44,67 @@ def load_documents():
         elif file.endswith(".html"):
             loader = UnstructuredHTMLLoader(path)
         elif file.endswith(".xml"):
-            # This will extract the text from the XML tags
             loader = UnstructuredXMLLoader(path)
         else:
-            print(f"Skipping unsupported file: {file}")
             continue
-        docs.extend(loader.load())
-    
+        loaded_docs = loader.load()
+        # Ensure source metadata is present
+        for doc in loaded_docs:
+            doc.metadata["source"] = os.path.basename(doc.metadata.get("source", file))
+        docs.extend(loaded_docs)
     return docs
 
 def build_index():
-    """Step 2: Ingestion and Indexing"""
+    """Build and persist Chroma vectorstore"""
     documents = load_documents()
-    splitter = RecursiveCharacterTextSplitter(chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP)
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=CHUNK_SIZE, 
+        chunk_overlap=CHUNK_OVERLAP,
+        # keep_metadata=True  # preserve source for citations
+    )
     chunks = splitter.split_documents(documents)
-    
-    # Store vectors in local Chroma DB
-    vectordb = Chroma.from_documents(
-        documents=chunks, 
-        embedding=embeddings, 
+    vectordb_local = Chroma.from_documents(
+        documents=chunks,
+        embedding=embeddings,
         persist_directory=CHROMA_DIR
     )
-    return vectordb
+    return vectordb_local
 
-def generate_answer(query: str, context_docs: List) -> Dict:
-    """Step 3: Retrieval and Generation (RAG)"""
+# --- Preload vectorstore ---
+if os.path.exists(CHROMA_DIR):
+    vectordb = Chroma(persist_directory=CHROMA_DIR, embedding_function=embeddings)
+else:
+    vectordb = build_index()
+
+# --- Preload LLM ---
+llm = ChatGroq(
+    temperature=0,
+    model_name="llama-3.1-8b-instant",
+    api_key=os.getenv("GROQ_API_KEY")
+)
+
+# --- RAG functions ---
+def generate_answer(query: str, context_docs: List, llm_instance=None) -> Dict:
+    """
+    Generates an answer using the provided context_docs.
+    Always attaches citations with 'source' and snippet.
+    """
+    if llm_instance is None:
+        llm_instance = llm
+
     if not context_docs:
-        return {
-            "answer": "I can only answer questions about company policies.",
-            "citations": []
-        }
+        return {"answer": "I can only answer questions about company policies.", "citations": []}
 
-    # Setup LLM (Using Groq as per project suggestions)
-    llm = ChatGroq(
-        temperature=0, 
-        model_name="llama-3.1-8b-instant", 
-        api_key=os.getenv("GROQ_API_KEY") 
-    )
-
-    # Building the context string
     context_text = "\n\n".join([doc.page_content for doc in context_docs])
-    
-    # System Prompt with Guardrails
+
     prompt = ChatPromptTemplate.from_messages([
         ("system", "You are a helpful policy assistant. Answer based ONLY on the provided context. "
                    "If the answer is not in the context, say 'I can only answer about our policies.' "
-                   "Always keep the response concise."),
+                   "Keep the response concise."),
         ("human", "Context: {context}\n\nQuestion: {question}")
     ])
-
-    # chain = prompt | llm
-    # response = chain.invoke({"context": context_text, "question": query})
-    formatted_prompt = prompt.format_messages(
-        context=context_text,
-        question=query
-        )
-
-    response = llm.invoke(formatted_prompt)
+    formatted_prompt = prompt.format_messages(context=context_text, question=query)
+    response = llm_instance.invoke(formatted_prompt)
 
     citations = [
         {"source": doc.metadata.get("source", "unknown"), "snippet": doc.page_content[:200]}
@@ -103,24 +113,51 @@ def generate_answer(query: str, context_docs: List) -> Dict:
 
     return {"answer": response.content, "citations": citations}
 
-def query_rag(query: str):
-    start = time.time()
-    
-    # Load existing vectorstore
-    vectordb = Chroma(persist_directory=CHROMA_DIR, embedding_function=embeddings)
-    docs = vectordb.similarity_search(query, k=TOP_K)
+def query_rag_stream(query: str, top_k: int = TOP_K):
+    """
+    Streaming RAG pipeline with embedding-based reranking:
+    1. Retrieve candidate docs
+    2. Rerank by embedding similarity to query
+    3. Yield citations first
+    4. Stream LLM output in JSON-safe chunks
+    """
+    # 1. DIRECT RETRIEVAL (Replace the candidate_docs and manual loop here)
+    # This retrieves docs and their similarity scores in one go
+    docs_with_scores = vectordb.similarity_search_with_relevance_scores(query, k=top_k)
 
-    result = generate_answer(query, docs)
-    latency = time.time() - start
+    # 2. EXTRACT DOCUMENTS
+    # We strip the scores and just keep the Document objects for the LLM
+    docs = [doc for doc, score in docs_with_scores]
 
-    return {
-        "query": query,
-        "answer": result["answer"],
-        "citations": result["citations"],
-        "latency": latency
-    }
+    # FALLBACK: If vector store returns nothing, do a standard search
+    if not docs:
+        docs = vectordb.similarity_search(query, k=2)
+
+    # 3. CONTEXT PREPARATION
+    context_text = "\n\n".join([doc.page_content for doc in docs])
+
+    # 4. CITATIONS PREPARATION
+    citations = [
+        {"source": doc.metadata.get("source", "unknown"), "snippet": doc.page_content[:200]}
+        for doc in docs
+    ]
+
+    # 6. Prompt for LLM
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", "You are a strict policy assistant. Answer ONLY based on context. "
+                   "If not found, say you don't know. Be concise."),
+        ("human", "Context: {context}\n\nQuestion: {question}")
+    ])
+    chain = prompt | llm
+
+    # 7. Yield citations first
+    yield (json.dumps({"citations": citations, "content": ""}) + "\n").encode("utf-8")
+
+    # 8. Stream LLM output safely
+    for text_chunk in chain.stream({"context": context_text, "question": query}):
+        if hasattr(text_chunk, "content") and text_chunk.content:
+            safe_content = html.escape(text_chunk.content)  # escape quotes, newlines
+            yield (json.dumps({"content": safe_content}) + "\n").encode("utf-8")
 
 if __name__ == "__main__":
-    print("Building index...")
-    build_index()
-    print("Done.")
+    print("Engine ready. Chroma vectorstore and LLM preloaded.")

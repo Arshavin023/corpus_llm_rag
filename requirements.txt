@@ -14,5 +14,6 @@ sentence-transformers
 unstructured
 python-dotenv
 pypdf
+gevent
 pytest
 pytest-cov

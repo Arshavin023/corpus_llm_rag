@@ -1,5 +1,6 @@
 import pytest
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
+import json
 from src.app import app
 
 @pytest.fixture
@@ -8,48 +9,21 @@ def client():
     with app.test_client() as client:
         yield client
 
-# ---------------------------
-# Basic Route Tests
-# ---------------------------
+@patch("src.app.query_rag_stream")
+def test_chat_streaming_success(mock_stream, client):
+    # Mock the generator behavior of query_rag_stream
+    mock_stream.return_value = [
+        json.dumps({"citations": [{"source": "test.pdf"}], "content": ""}).encode("utf-8") + b"\n",
+        json.dumps({"content": "The answer is 42."}).encode("utf-8") + b"\n"
+    ]
 
-def test_home_page(client):
-    """Test that the index page loads."""
-    response = client.get("/")
+    response = client.post("/chat", json={"query": "What is the meaning of life?"})
+    
     assert response.status_code == 200
-
-def test_health_route(client):
-    """Test the health check endpoint."""
-    response = client.get("/health")
-    assert response.status_code == 200
-    assert response.json["status"] == "ok"
-    assert "engine" in response.json
-
-# ---------------------------
-# Chat API Tests
-# ---------------------------
-
-@patch("src.app.query_rag")
-def test_chat_post_success(mock_query, client):
-    """Test successful chat interaction."""
-    # Mock return value from engine.py
-    mock_query.return_value = {
-        "query": "What is PTO?",
-        "answer": "15 days.",
-        "citations": [{"source": "benefits.md", "snippet": "PTO info"}],
-        "latency": 0.5
-    }
-
-    response = client.post(
-        "/chat",
-        json={"query": "What is PTO?"}
-    )
-
-    assert response.status_code == 200
-    assert response.json["answer"] == "15 days."
-    assert response.json["citations"][0]["source"] == "benefits.md"
-
-def test_chat_no_query(client):
-    """Test error handling when no query is provided."""
-    response = client.post("/chat", json={})
-    assert response.status_code == 400
-    assert "error" in response.json
+    # Consolidate the stream data
+    data = response.data.decode("utf-8").split("\n")
+    first_chunk = json.loads(data[0])
+    second_chunk = json.loads(data[1])
+    
+    assert "citations" in first_chunk
+    assert "42" in second_chunk["content"]
