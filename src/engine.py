@@ -24,7 +24,7 @@ DATA_DIR = "src/data"
 CHROMA_DIR = "src/chroma_db"
 CHUNK_SIZE = 500
 CHUNK_OVERLAP = 100
-TOP_K = 7 # increased to improve grounding
+TOP_K = 7 # Number of documents to retrieve for context
 embedding_model_name = "all-mpnet-base-v2" #"sentence-transformers/all-MiniLM-L6-v2"
 # embedding_model_name = "sentence-transformers/all-MiniLM-L6-v2"
 
