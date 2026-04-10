@@ -2,6 +2,7 @@
 torch
 torchvision
 gunicorn
+reportlab
 flask
 langchain
 langchain-core
