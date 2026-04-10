@@ -28,6 +28,7 @@ TOP_K = 7 # Number of documents to retrieve for context
 embedding_model_name = "all-mpnet-base-v2" #"sentence-transformers/all-MiniLM-L6-v2"
 # embedding_model_name = "sentence-transformers/all-MiniLM-L6-v2"
 
+
 # --- Preload embeddings ---
 embeddings = HuggingFaceEmbeddings(model_name=embedding_model_name)
 # --- Document loaders ---
