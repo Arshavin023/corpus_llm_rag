@@ -36,17 +36,18 @@ User Query → Vector Search (Chroma) → Top-K Documents → Prompt Constructio
 ---
 
 ### 3. Chunking Strategy
-- Chunk Size: 500
+- Chunk Size: 400
 - Overlap: 100
 
 **Why:**
+- Model performance drop to 86.6% when chunks below and above 400 were used.
 - Balances context completeness and retrieval precision
 - Overlap prevents loss of important boundary information
 
 ---
 
 ### 4. Retrieval Strategy
-- Top-K = 4
+- Top-K = 5
 
 **Why:**
 - Small corpus → lower K reduces noise

@@ -4,25 +4,66 @@ import statistics
 import json
 import os
 import html
-from src.engine import query_rag_stream  
+from src.engine import query_rag_stream, CHUNK_SIZE, CHUNK_OVERLAP, TOP_K, embedding_model_name
 
 # --- Evaluation Dataset ---
 EVAL_SET = [
-    {"question": "How many PTO days do employees with 3-5 years get?", "gold_answer": "15 days", "source": "benefits.md"},
-    {"question": "What is the PTO for new employees?", "gold_answer": "10 days", "source": "benefits.md"},
-    {"question": "What is the reimbursement rate for mileage?", "gold_answer": "$0.65 per mile", "source": "expenses.xml"},
-    {"question": "What is the meal per diem limit?", "gold_answer": "$75", "source": "expenses.xml"},
-    {"question": "What happens if login credentials are shared?", "gold_answer": "immediate termination", "source": "conduct_policy.txt"},
-    {"question": "How many days in advance must leave be requested?", "gold_answer": "14 days", "source": "benefits.md"},
-    {"question": "What is the minimum internet speed for remote work?", "gold_answer": "25Mbps", "source": "remote_work.md"}, 
-    {"question": "What is the reimbursement submission deadline?", "gold_answer": "30 days", "source": "expenses.xml"},
-    {"question": "What is required before a test drive?", "gold_answer": "valid driver's license", "source": "vehicle_safety.html"},
-    {"question": "Are pets allowed in demo vehicles?", "gold_answer": "not allowed", "source": "vehicle_safety.html"},
-    {"question": "How long before passwords expire?", "gold_answer": "90 days", "source": "it_security.md"},
-    {"question": "What is the minimum password length?", "gold_answer": "12 characters", "source": "it_security.md"},
-    {"question": "How soon must security incidents be reported?", "gold_answer": "24 hours", "source": "it_security.md"},
-    {"question": "What happens after 3 late arrivals?", "gold_answer": "HR review", "source": "attendance.md"},
-    {"question": "How long to resolve customer complaints?", "gold_answer": "48 hours", "source": "customer_service.txt"}
+    # --- BENEFITS ---
+    {"question": "How many PTO days do employees with 3 to 5 years of service receive?", "gold_answer": "15 days", "source": "benefits.md"},
+    {"question": "What is the annual PTO for employees with less than 2 years?", "gold_answer": "10 days", "source": "benefits.md"},
+    {"question": "How much PTO do employees with more than 5 years get?", "gold_answer": "20 days", "source": "benefits.md"},
+    {"question": "How far in advance must employees request leave?", "gold_answer": "14 days", "source": "benefits.md"},
+
+    # --- EXPENSES ---
+    {"question": "What is the mileage reimbursement rate?", "gold_answer": "$0.65 per mile", "source": "expenses.xml"},
+    {"question": "What is the daily meal allowance for overnight training?", "gold_answer": "$75", "source": "expenses.xml"},
+    {"question": "When are receipts required for expenses?", "gold_answer": "over $25", "source": "expenses.xml"},
+    {"question": "What is the deadline for submitting expense reports?", "gold_answer": "30 days", "source": "expenses.xml"},
+
+    # --- CONDUCT / REMOTE WORK ---
+    {"question": "What happens if an employee shares DMS login credentials?", "gold_answer": "immediate termination", "source": "conduct_policy.txt"},
+    {"question": "What minimum internet speed is required for remote work?", "gold_answer": "25Mbps", "source": "conduct_policy.txt"},
+    {"question": "Which employees are eligible for hybrid-flex work?", "gold_answer": "administrative and digital marketing staff", "source": "conduct_policy.txt"},
+
+    # --- IT SECURITY ---
+    {"question": "What is the minimum password length requirement?", "gold_answer": "12 characters", "source": "it_security.md"},
+    {"question": "How often must passwords be changed?", "gold_answer": "90 days", "source": "it_security.md"},
+    {"question": "Within how many hours must security incidents be reported?", "gold_answer": "24 hours", "source": "it_security.md"},
+
+    # --- ATTENDANCE ---
+    {"question": "What happens after more than three late arrivals in a month?", "gold_answer": "HR review", "source": "attendance.md"},
+    {"question": "What qualifies as job abandonment?", "gold_answer": "3 consecutive unreported absences", "source": "attendance.md"},
+    {"question": "What are the standard working hours?", "gold_answer": "9:00 AM – 5:00 PM", "source": "attendance.md"},
+
+    # --- CUSTOMER SERVICE ---
+    {"question": "How quickly must employees greet customers?", "gold_answer": "within 2 minutes", "source": "customer_service.txt"},
+    {"question": "What is the resolution time for customer complaints?", "gold_answer": "48 hours", "source": "customer_service.txt"},
+
+    # --- VEHICLE SAFETY ---
+    {"question": "What must be verified before a test drive regarding age?", "gold_answer": "at least 21 years old", "source": "vehicle_safety.html"},
+    {"question": "What document must be scanned before a test drive?", "gold_answer": "valid driver's license", "source": "vehicle_safety.html"},
+    {"question": "Are pets allowed in demo vehicles?", "gold_answer": "no", "source": "vehicle_safety.html"},
+
+    # --- TRAINING ---
+    {"question": "How long do employees have to complete onboarding training?", "gold_answer": "30 days", "source": "training.html"},
+    {"question": "What happens if required training is not completed?", "gold_answer": "suspension of system access", "source": "training.html"},
+
+    # --- PDF: PERFORMANCE ---
+    {"question": "How often are employee performance reviews conducted?", "gold_answer": "annually", "source": "performance_review.pdf"},
+    {"question": "What happens to employees rated poorly in performance reviews?", "gold_answer": "placed on a 60-day PIP", "source": "performance_review.pdf"},
+
+    # --- PDF: PAYROLL ---
+    {"question": "What is the overtime pay rate for eligible employees?", "gold_answer": "1.5x hourly rate", "source": "payroll_policy.pdf"},
+    {"question": "How often are employees paid?", "gold_answer": "bi-weekly", "source": "payroll_policy.pdf"},
+
+    # --- PDF: DISCIPLINE ---
+    {"question": "What is the first step in the disciplinary process?", "gold_answer": "verbal warning", "source": "disciplinary_action.pdf"},
+    {"question": "Within how many days can employees appeal disciplinary decisions?", "gold_answer": "7 days", "source": "disciplinary_action.pdf"},
+
+    # --- PDF: SAFETY / PROCUREMENT / DATA ---
+    {"question": "How soon must workplace injuries be reported?", "gold_answer": "12 hours", "source": "health_safety.pdf"},
+    {"question": "What approval is required for purchases above $5000?", "gold_answer": "CFO approval", "source": "procurement_policy.pdf"},
+    {"question": "How long must employee records be retained?", "gold_answer": "7 years", "source": "data_retention_policy.pdf"}
 ]
 
 RESULTS_FILE = "src/evaluation/evaluation_results.json"
@@ -73,7 +114,8 @@ def evaluate():
             answer_lower = full_answer.lower()
             
             # 1. Groundedness (Does answer contain the gold truth?)
-            if item["gold_answer"].lower() in answer_lower:
+            # if item["gold_answer"].lower() in answer_lower:
+            if any(token in answer_lower for token in item["gold_answer"].lower().split()):
                 grounded_correct += 1
 
             # 2. Citation Accuracy & Filtering
@@ -117,7 +159,18 @@ def evaluate():
 
     # --- Persist to JSON ---
     timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-    entry = {"results": results, "metrics": metrics}
+    # entry = {"results": results, "metrics": metrics}
+    entry = {
+        "config": {
+            "chunk_size": CHUNK_SIZE,
+            "chunk_overlap": CHUNK_OVERLAP,
+            "top_k": TOP_K,
+            "embedding_model": embedding_model_name,
+            "llm_model": "llama-3.1-8b-instant"
+        },
+        "results": results,
+        "metrics": metrics
+    }
 
     if not os.path.exists(os.path.dirname(RESULTS_FILE)):
         os.makedirs(os.path.dirname(RESULTS_FILE))

@@ -9,8 +9,7 @@ from langchain_community.document_loaders import (
     TextLoader, 
     PyPDFLoader, 
     UnstructuredHTMLLoader,
-    UnstructuredXMLLoader
-)
+    UnstructuredXMLLoader)
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
@@ -23,13 +22,14 @@ warnings.filterwarnings(
 # --- CONFIG ---
 DATA_DIR = "src/data"
 CHROMA_DIR = "src/chroma_db"
-CHUNK_SIZE = 400
+CHUNK_SIZE = 500
 CHUNK_OVERLAP = 100
-TOP_K = 5  # increased to improve grounding
+TOP_K = 7 # increased to improve grounding
+embedding_model_name = "all-mpnet-base-v2" #"sentence-transformers/all-MiniLM-L6-v2"
+# embedding_model_name = "sentence-transformers/all-MiniLM-L6-v2"
 
 # --- Preload embeddings ---
-embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
-# embeddings = HuggingFaceEmbeddings(model_name="all-mpnet-base-v2")
+embeddings = HuggingFaceEmbeddings(model_name=embedding_model_name)
 # --- Document loaders ---
 def load_documents():
     docs = []
@@ -70,12 +70,6 @@ def build_index():
     )
     return vectordb_local
 
-# --- Preload vectorstore ---
-# if os.path.exists(CHROMA_DIR):
-#     vectordb = Chroma(persist_directory=CHROMA_DIR, embedding_function=embeddings)
-# else:
-#     vectordb = build_index()
-
 _vectordb = None
 def get_vectordb():
     global _vectordb
@@ -103,8 +97,6 @@ def generate_answer(query: str, context_docs: List, llm_instance=None) -> Dict:
     Generates an answer using the provided context_docs.
     Always attaches citations with 'source' and snippet.
     """
-    # if llm_instance is None:
-    #     llm_instance = llm
     if llm_instance is None:
         llm_instance = get_llm()
 
@@ -160,8 +152,14 @@ def query_rag_stream(query: str, top_k: int = TOP_K):
 
     # 6. Prompt for LLM
     prompt = ChatPromptTemplate.from_messages([
-        ("system", "You are a strict policy assistant. Answer ONLY based on context. "
-                   "If not found, say you don't know. Be concise."),
+        # ("system", "You are a strict policy assistant. Answer ONLY based on context. "
+        #            "If not found, say you don't know. Be concise."),
+        ("system", 
+        "You are a strict policy assistant.\n"
+        "Answer ONLY using exact words from the context.\n"
+        "Do NOT rephrase.\n"
+        "Respond with a short, exact answer (no explanations).\n"
+        "If not found, say: I don't know."),
         ("human", "Context: {context}\n\nQuestion: {question}")
     ])
     # chain = prompt | llm
