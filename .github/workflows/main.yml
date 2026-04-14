@@ -34,6 +34,7 @@ jobs:
           script: |
             # Ensure the host directory exists
             mkdir -p /home/uche/chroma_data
+            sudo chown -R 1000:1000 /home/uche/chroma_data
 
             # 2. Pull and Restart
             if docker pull ${{ secrets.DOCKER_USERNAME }}/corpus_llm_rag:latest; then

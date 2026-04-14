@@ -113,7 +113,10 @@ rm -rf src/chroma_db src/__pycache__ && python3 src/engine.py && truncate -s 0 s
 
 ### 6. CI/CD & Deployment <a name="cicd--deployment"></a>
 #### Add environment variables in .github/workflows YAML files and deploy the desired branch
-
+```bash
+ls -la /home/uche/chroma_data 
+docker inspect corpus_llm_rag --format='{{ .Mounts }}'
+```
 
 ## Authors & Acknowledgements <a name="authors--acknowledgements"></a>
 - Developed by Uche Nnodim
