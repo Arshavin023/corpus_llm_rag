@@ -32,16 +32,19 @@ jobs:
           port: ${{ secrets.STAGING_PORT }}
           script_stop: true
           script: |
-            # Pull and Restart
+            # 1. Clear dangling images
+            docker image prune -f
+
+            # 2. Pull and Restart
             if docker pull ${{ secrets.DOCKER_USERNAME }}/corpus_llm_rag:latest; then
                 echo "Pull successful, swapping containers..."
                 docker stop corpus_llm_rag || true
                 docker rm corpus_llm_rag || true
-                
-                # We use -rf to ensure we start totally fresh
-                # rm -rf /home/uche/chroma_data
-                mkdir -p /home/uche/chroma_data
 
+                # We use -rf to ensure we start totally fresh
+                rm -rf /home/uche/chroma_data
+                mkdir -p /home/uche/chroma_data
+                
                 # Updated command with Persistent Volume Mapping
                 docker run -d --name corpus_llm_rag \
                   --user 1000:1000 \
@@ -49,10 +52,6 @@ jobs:
                   -v /home/uche/chroma_data:/app/src/chroma_db \
                   -e GROQ_API_KEY=${{ secrets.GROQ_API_KEY }} \
                   ${{ secrets.DOCKER_USERNAME }}/corpus_llm_rag:latest
-
-                # Clean up the OLD image now that the new one is running
-                docker image prune -f
-                
             else
                 echo "Pull failed!"
                 exit 1
