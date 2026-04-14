@@ -34,7 +34,6 @@ jobs:
           script: |
             # Ensure the host directory exists
             mkdir -p /home/uche/chroma_data
-            sudo chown -R 1000:1000 /home/uche/chroma_data
 
             # 2. Pull and Restart
             if docker pull ${{ secrets.DOCKER_USERNAME }}/corpus_llm_rag:latest; then
@@ -44,6 +43,7 @@ jobs:
                 
                 # Updated command with Persistent Volume Mapping
                 docker run -d --name corpus_llm_rag \
+                  --user 1000:1000 \
                   -p 1762:1762 \
                   -v /home/uche/chroma_data:/app/src/chroma_db \
                   -e GROQ_API_KEY=${{ secrets.GROQ_API_KEY }} \
