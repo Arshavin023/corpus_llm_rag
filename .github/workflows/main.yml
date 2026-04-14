@@ -42,8 +42,8 @@ jobs:
                 docker rm corpus_llm_rag || true
 
                 # We use -rf to ensure we start totally fresh
-                rm -rf /home/uche/chroma_data
                 mkdir -p /home/uche/chroma_db
+                chmod -R 777 /home/uche/chroma_db
                 
                 # Updated command with Persistent Volume Mapping
                 docker run -d --name corpus_llm_rag \

@@ -134,6 +134,9 @@ celerybeat.pid
 # SageMath parsed files
 *.sage.py
 
+# .pem files
+uche_devinstance.pem
+
 # Environments
 .env
 .envrc
