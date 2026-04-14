@@ -22,6 +22,7 @@ warnings.filterwarnings(
 # --- CONFIG ---
 DATA_DIR = "src/data"
 CHROMA_DIR = "src/chroma_db"
+# CHROMA_DIR = os.getenv("CHROMA_DB_PATH", "src/chroma_db")
 CHUNK_SIZE = 500
 CHUNK_OVERLAP = 100
 TOP_K = 7 # Number of documents to retrieve for context
